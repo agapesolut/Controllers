@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: faturamento-api
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/faturamento_db}
+    username: ${DB_USERNAME:faturamento_user}
+    password: ${DB_PASSWORD:faturamento_pass}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  security:
+    cors-origin: ${CORS_ORIGIN:http://localhost:5173}

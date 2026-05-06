@@ -1,0 +1,39 @@
+# Node
+node_modules/
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# Logs
+*.log
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+*.sqlite
+
+# Backups
+*.bak
+*.backup
+
+# Secrets
+application-prod.properties
+application-prod.yml
