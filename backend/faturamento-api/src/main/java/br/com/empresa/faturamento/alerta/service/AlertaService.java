@@ -83,20 +83,33 @@ public class AlertaService {
         return toResponse(alertaRepository.save(alerta));
     }
 
-    private void sincronizarAlertas() {
-        Set<Long> clientesComAlerta = new HashSet<>();
+    private final java.util.concurrent.atomic.AtomicBoolean syncing = new java.util.concurrent.atomic.AtomicBoolean(false);
 
-        for (Cliente cliente : clienteService.listarEntidades()) {
-            clienteService.determinarTipoAlerta(cliente).ifPresent(tipoAlerta -> {
-                AlertaReajuste alerta = construirOuAtualizarAlerta(cliente, tipoAlerta);
-                clientesComAlerta.add(alerta.getClienteId());
-            });
+    private void sincronizarAlertas() {
+        if (!syncing.compareAndSet(false, true)) {
+            return; // Já existe uma sincronização em andamento, ignoramos para evitar concorrência e exceptions no BD.
         }
 
-        alertaRepository.findAll().stream()
-            .filter(alerta -> !clientesComAlerta.contains(alerta.getClienteId()))
-            .forEach(alertaRepository::delete);
+        try {
+            Set<Long> clientesComAlerta = new HashSet<>();
+
+            for (Cliente cliente : clienteService.listarEntidades()) {
+                clienteService.determinarTipoAlerta(cliente).ifPresent(tipoAlerta -> {
+                    AlertaReajuste alerta = construirOuAtualizarAlerta(cliente, tipoAlerta);
+                    clientesComAlerta.add(alerta.getClienteId());
+                });
+            }
+
+            alertaRepository.findAll().stream()
+                .filter(alerta -> !clientesComAlerta.contains(alerta.getClienteId()))
+                .forEach(alertaRepository::delete);
+                
+            alertaRepository.flush(); // Garante que a transação grave antes de liberar o lock lógico
+        } finally {
+            syncing.set(false);
+        }
     }
+
 
     private AlertaReajuste construirOuAtualizarAlerta(Cliente cliente, TipoAlerta tipoAlerta) {
         FaixaHonorario faixaAtual = faixaService.buscarEntidadePorId(cliente.getFaixaAtualId());

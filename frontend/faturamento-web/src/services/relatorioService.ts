@@ -1,8 +1,7 @@
-import { mockDelay } from "../data/mockData";
+import { api, unwrapApiData } from "./api";
 
 export const relatorioService = {
   async exportar(tipo: "excel" | "csv" | "pdf"): Promise<string> {
-    const mensagem = `Exportacao ${tipo.toUpperCase()} iniciada no modo demonstracao.`;
-    return mockDelay(mensagem, 250);
+    return await unwrapApiData<string>(api.get(`/relatorios/reajustes/${tipo}`));
   },
 };

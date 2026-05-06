@@ -1,7 +1,7 @@
 export interface Usuario {
-  id: number;
   nome: string;
   email: string;
   perfil: string;
+  token: string;
   permissoes: string[];
 }
