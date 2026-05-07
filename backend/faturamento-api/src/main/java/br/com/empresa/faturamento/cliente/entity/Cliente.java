@@ -79,6 +79,10 @@ public class Cliente {
         this.ativo = ativo;
     }
 
+    public void desativar() {
+        this.ativo = false;
+    }
+
     public Long getId() {
         return id;
     }

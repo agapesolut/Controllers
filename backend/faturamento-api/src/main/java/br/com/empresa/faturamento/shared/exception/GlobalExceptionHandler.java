@@ -26,4 +26,12 @@ public class GlobalExceptionHandler {
             "message", "Dados invalidos para a requisicao."
         ));
     }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Map<String, Object>> handleBusiness(BusinessException exception) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "success", false,
+            "message", exception.getMessage()
+        ));
+    }
 }

@@ -72,6 +72,10 @@ public class FaturamentoCliente {
         return valorFaturado;
     }
 
+    public void setValorFaturado(BigDecimal valorFaturado) {
+        this.valorFaturado = valorFaturado;
+    }
+
     public LocalDate getDataReferencia() {
         return dataReferencia;
     }

@@ -110,6 +110,10 @@ public class ClienteService {
 
     @Transactional
     public ClienteResumoResponse criar(ClienteUpsertRequest request) {
+        if (clienteRepository.existsByCnpj(request.cnpj())) {
+            throw new br.com.empresa.faturamento.shared.exception.BusinessException("Cliente ja cadastrado com este CNPJ.");
+        }
+
         faixaService.buscarEntidadePorId(request.faixaAtualId());
 
         Cliente novoCliente = new Cliente(
@@ -122,11 +126,22 @@ public class ClienteService {
             request.responsavelInterno(),
             request.ativo()
         );
-        return toResumo(clienteRepository.save(novoCliente));
+        novoCliente = clienteRepository.save(novoCliente);
+
+        if (request.faturamentoAtual() != null && request.faturamentoAtual().compareTo(BigDecimal.ZERO) > 0) {
+            faturamentoService.adicionarFaturamento(novoCliente.getId(), request.faturamentoAtual());
+        }
+
+        return toResumo(novoCliente);
     }
 
     @Transactional
     public ClienteResumoResponse atualizar(Long id, ClienteUpsertRequest request) {
+        if (clienteRepository.existsByCnpjAndIdNot(request.cnpj(), id)) {
+            throw new br.com.empresa.faturamento.shared.exception.BusinessException("CNPJ ja em uso por outro cliente.");
+        }
+
+        // validar faixa existe
         faixaService.buscarEntidadePorId(request.faixaAtualId());
 
         Cliente cliente = buscarEntidadePorId(id);
@@ -139,13 +154,20 @@ public class ClienteService {
             request.responsavelInterno(),
             request.ativo()
         );
+
+        // Se houver faturamento atual informado, registra ou atualiza a entrada
+        if (request.faturamentoAtual() != null && request.faturamentoAtual().compareTo(BigDecimal.ZERO) > 0) {
+            faturamentoService.upsertFaturamento(cliente.getId(), request.faturamentoAtual());
+        }
+
         return toResumo(clienteRepository.save(cliente));
     }
 
     @Transactional
     public void remover(Long id) {
         Cliente cliente = buscarEntidadePorId(id);
-        clienteRepository.delete(cliente);
+        cliente.desativar();
+        clienteRepository.save(cliente);
     }
 
     private ClienteResumoResponse toResumo(Cliente cliente) {

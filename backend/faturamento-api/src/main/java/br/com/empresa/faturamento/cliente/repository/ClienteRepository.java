@@ -10,4 +10,8 @@ import br.com.empresa.faturamento.cliente.entity.Cliente;
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     List<Cliente> findByAtivoTrue(Sort sort);
+
+    boolean existsByCnpj(String cnpj);
+
+    boolean existsByCnpjAndIdNot(String cnpj, Long id);
 }

@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -56,5 +57,32 @@ public class FaturamentoService {
         return totais.entrySet().stream()
             .map(entry -> new ChartPointResponse(entry.getKey().format(PERIOD_FORMATTER), entry.getValue()))
             .toList();
+    }
+
+    public void adicionarFaturamento(Long clienteId, BigDecimal valorFaturado) {
+        LocalDate dataReferencia = LocalDate.now().withDayOfMonth(1);
+        FaturamentoCliente faturamento = new FaturamentoCliente(
+            null,
+            clienteId,
+            dataReferencia.getMonthValue(),
+            dataReferencia.getYear(),
+            valorFaturado,
+            dataReferencia
+        );
+        faturamentoRepository.save(faturamento);
+    }
+
+    public void upsertFaturamento(Long clienteId, BigDecimal valorFaturado) {
+        LocalDate currentMonth = LocalDate.now().withDayOfMonth(1);
+        Optional<FaturamentoCliente> existing =
+            faturamentoRepository.findTopByClienteIdOrderByDataReferenciaDesc(clienteId);
+
+        if (existing.isPresent() && existing.get().getDataReferencia().equals(currentMonth)) {
+            FaturamentoCliente fc = existing.get();
+            fc.setValorFaturado(valorFaturado);
+            faturamentoRepository.save(fc);
+        } else {
+            adicionarFaturamento(clienteId, valorFaturado);
+        }
     }
 }

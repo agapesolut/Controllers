@@ -43,15 +43,15 @@ public class ClienteController {
         return ApiResponse.ok("Cliente criado em modo inicial mock.", clienteService.criar(request));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = "application/json")
     public ApiResponse<?> atualizar(@PathVariable Long id, @Valid @RequestBody ClienteUpsertRequest request) {
-        return ApiResponse.ok("Cliente atualizado em modo inicial mock.", clienteService.atualizar(id, request));
+        return ApiResponse.ok("Cliente atualizado com sucesso.", clienteService.atualizar(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<?> remover(@PathVariable Long id) {
         clienteService.remover(id);
-        return ApiResponse.ok("Cliente removido em modo inicial mock.", null);
+        return ApiResponse.ok("Cliente removido com sucesso.", null);
     }
 
     @GetMapping("/{id}/analise")

@@ -12,6 +12,7 @@ public record ClienteUpsertRequest(
     @NotNull(message = "Honorario atual obrigatorio.") BigDecimal honorarioAtual,
     @NotNull(message = "Faixa atual obrigatoria.") Long faixaAtualId,
     @NotBlank(message = "Responsavel interno obrigatorio.") String responsavelInterno,
-    @NotNull(message = "Status obrigatorio.") Boolean ativo
+    @NotNull(message = "Status obrigatorio.") Boolean ativo,
+    BigDecimal faturamentoAtual
 ) {
 }
