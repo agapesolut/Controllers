@@ -1,6 +1,5 @@
 import {
   createContext,
-  startTransition,
   useEffect,
   useState,
   type ReactNode,
@@ -26,12 +25,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const session = window.sessionStorage.getItem(SESSION_KEY);
+    // Tenta recuperar do localStorage para persistir após fechar aba,
+    // ou sessionStorage se quiser apenas na mesma sessão.
+    // Vamos usar localStorage para uma experiência mais fluida.
+    const session = window.localStorage.getItem(SESSION_KEY);
 
     if (session) {
-      startTransition(() => {
+      try {
         setUser(JSON.parse(session) as Usuario);
-      });
+      } catch (e) {
+        window.localStorage.removeItem(SESSION_KEY);
+      }
     }
 
     setLoading(false);
@@ -39,19 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (login: string, senha: string) => {
     const authenticatedUser = await authService.login({ login, senha });
-    window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(authenticatedUser));
-
-    startTransition(() => {
-      setUser(authenticatedUser);
-    });
+    window.localStorage.setItem(SESSION_KEY, JSON.stringify(authenticatedUser));
+    setUser(authenticatedUser);
   };
 
   const signOut = () => {
-    window.sessionStorage.removeItem(SESSION_KEY);
-
-    startTransition(() => {
-      setUser(null);
-    });
+    window.localStorage.removeItem(SESSION_KEY);
+    setUser(null);
   };
 
   const value: AuthContextValue = {
@@ -63,3 +61,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
